@@ -5,6 +5,10 @@
   become_method: sudo
   
   tasks:
+  
+  - name: update gravity
+     ansible.builtin.shell:
+      cmd: pihole updateGravity
 
   - name: update pihole
     ansible.builtin.shell:
