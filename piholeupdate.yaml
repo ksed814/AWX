@@ -7,7 +7,7 @@
   tasks:
   
   - name: update gravity
-     ansible.builtin.shell:
+    ansible.builtin.shell:
       cmd: pihole updateGravity
 
   - name: update pihole
