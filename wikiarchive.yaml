@@ -1,0 +1,32 @@
+---
+- name: Download latest Wikipedia archive and delete old archives
+  hosts: 192.168.0.192
+  gather_facts: no
+  
+  tasks:
+    - name: Find latest Wikipedia archive URL
+      uri:
+        url: https://dumps.wikimedia.org/enwiki/latest/
+        return_content: yes
+      register: archive_page
+      
+    - name: Extract archive URL
+      set_fact:
+        archive_url: "{{ archive_page.content | regex_findall('href=\\"(enwiki-.*?.bz2)\\"') | first }}"
+        
+    - name: Download archive
+      get_url:
+        url: "https://dumps.wikimedia.org/enwiki/latest/{{ archive_url }}"
+        dest: "/home/kurt/Downloads/wiki/{{ archive_url }}"
+        
+    - name: Get list of existing archive files
+      find:
+        paths: "/home/kurt/Downloads/wiki/"
+        patterns: "enwiki-*.bz2"
+      register: archives
+      
+    - name: Delete old archives
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      with_items: "{{ archives.files | sort(attribute='path') | reverse | skip(1) }}"
