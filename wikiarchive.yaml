@@ -12,7 +12,7 @@
       
     - name: Extract archive URL
       set_fact:
-        archive_url: "{{ archive_page.content | regex_findall('href=\\"(enwiki-.*?.bz2)\\"') | first }}"
+        archive_url: "{{ archive_page.content | regex_findall('href=\\(enwiki-.*?.bz2)\\') | first }}"
         
     - name: Download archive
       get_url:
