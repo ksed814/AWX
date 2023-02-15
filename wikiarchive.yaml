@@ -12,6 +12,7 @@
         dest: "/home/kurt/Downloads/wiki/index.html"
         group: kurt
         owner: kurt
+        mode: '775'
 
     - name: Set archive URL
       set_fact:
