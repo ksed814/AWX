@@ -1,6 +1,6 @@
 ---
 - name: Download latest wikipedia archive and delete old archives
-  hosts: localhost
+  hosts: 192.168.0.162
   gather_facts: false
   tasks:
   - name: Retrieve wikipedia archive page
