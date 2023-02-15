@@ -18,7 +18,7 @@
       set_fact:
         archive_url: "{{ archive_page.content | regex_findall('href=\"(enwiki-.*?.bz2)\"') | first }}"
       vars:
-        archive_page: "{{ lookup('ansible.builtin.file', '/home/kurt/Downloads/wiki/index.html') }}"
+        archive_page: "{{ lookup('ansible.builtin.file', '/home/kurt/Downloads/wiki/') }}"
 
     - name: Download wikipedia archive
       get_url:
