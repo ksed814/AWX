@@ -1,28 +1,31 @@
 ---
-- name: Download latest wikipedia archive and delete old archives
+---
+- name: Download and manage wikipedia archive
   hosts: 192.168.0.162
-  gather_facts: false
+  gather_facts: no
+
   tasks:
-  - name: Retrieve wikipedia archive page
-    uri:
-      url: "https://dumps.wikimedia.org/backup-index.html"
-      return_content: yes
-    register: archive_page
+    - name: Download wikipedia archive page
+      get_url:
+        url: "https://dumps.wikimedia.org/enwiki/latest/"
+        dest: "/home/kurt/Downloads/wiki/index.html"
 
-  - name: Set archive URL
-    set_fact:
-      archive_url: "{{ archive_page.content | regex_findall('href=\"(enwiki-.*?.bz2)\"') | default([]) | first }}"
+    - name: Set archive URL
+      set_fact:
+        archive_url: "{{ archive_page.content | regex_findall('href=\"(enwiki-.*?.bz2)\"') | first }}"
+      vars:
+        archive_page: "{{ lookup('file', '/home/kurt/Downloads/wiki/index.html') }}"
 
-  - name: Download wikipedia archive
-    get_url:
-      url: "https://dumps.wikimedia.org/{{ archive_url }}"
-      dest: "/home/kurt/Downloads/wiki/enwiki-latest.bz2"
+    - name: Download wikipedia archive
+      get_url:
+        url: "https://dumps.wikimedia.org/enwiki/latest/{{ archive_url }}"
+        dest: "/home/kurt/Downloads/wiki/{{ archive_url }}"
+      when: archive_url is defined
 
-  - name: Delete old wikipedia archives
-    file:
-      path: "{{ item }}"
-      state: absent
-    with_fileglob:
-      - "/home/kurt/Downloads/wiki/enwiki-*"
-      exclude:
-        - "/home/kurt/Downloads/wiki/enwiki-latest.bz2"
+    - name: Delete old wikipedia archives
+      file:
+        path: "/home/kurt/Downloads/wiki"
+        state: absent
+        glob: "enwiki-*"
+        exclude:
+          - "/home/kurt/Downloads/wiki/{{ archive_url | default('') }}"
