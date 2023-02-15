@@ -1,6 +1,6 @@
 ---
 - name: Download latest Wikipedia archive and delete old archives
-  hosts: 192.168.0.192
+  hosts: 192.168.0.162
   gather_facts: no
   
   tasks:
