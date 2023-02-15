@@ -2,15 +2,15 @@
 - name: Download and manage wikipedia archive
   hosts: 192.168.0.162
   gather_facts: no
-  become: yes
-  become_method: sudo
-  
+ 
 
   tasks:
     - name: Download wikipedia archive page
       get_url:
         url: "https://dumps.wikimedia.org/enwiki/latest/"
         dest: "/home/kurt/Downloads/wiki/index.html"
+        group: kurt
+        owner: kurt
 
     - name: Set archive URL
       set_fact:
