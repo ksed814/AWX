@@ -1,6 +1,6 @@
 ---
-- name: Download latest wikipedia archive
-  hosts: 192.168.0.162
+- name: Download latest wikipedia archive and delete old archives
+  hosts: localhost
   gather_facts: false
   tasks:
   - name: Retrieve wikipedia archive page
@@ -20,9 +20,8 @@
 
   - name: Delete old wikipedia archives
     file:
-      path: "/home/kurt/Downloads/wiki/{{ item }}"
+      path: "{{ item }}"
       state: absent
     with_fileglob:
       - "/home/kurt/Downloads/wiki/enwiki-*"
-      exclude:
-        - "/home/kurt/Downloads/wiki/enwiki-latest.bz2"
+    when: item != "/home/kurt/Downloads/wiki/enwiki-latest.bz2"
