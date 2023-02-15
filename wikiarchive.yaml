@@ -11,7 +11,7 @@
 
   - name: Set archive URL
     set_fact:
-      archive_url: "{{ archive_page.content | regex_findall('href=\"(enwiki-.*?.bz2)\"') | first }}"
+      archive_url: "{{ archive_page.content | regex_findall('href=\"(enwiki-.*?.bz2)\"') | default([]) | first }}"
 
   - name: Download wikipedia archive
     get_url:
@@ -24,4 +24,5 @@
       state: absent
     with_fileglob:
       - "/home/kurt/Downloads/wiki/enwiki-*"
-    when: item != "/home/kurt/Downloads/wiki/enwiki-latest.bz2"
+      exclude:
+        - "/home/kurt/Downloads/wiki/enwiki-latest.bz2"
