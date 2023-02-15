@@ -1,15 +1,13 @@
 ---
 - name: Download and manage wikipedia archive
   hosts: 192.168.0.162
-  gather_facts: no
-  become: yes
- 
+  gather_facts: no 
 
   tasks:
     - name: Download wikipedia archive page
       get_url:
         url: "https://dumps.wikimedia.org/enwiki/latest/"
-        dest: "/home/kurt/Downloads/wiki/index.html"
+        dest: "/home/kurt/wiki/index.html"
         group: kurt
         owner: kurt
         mode: '775'
@@ -18,18 +16,18 @@
       set_fact:
         archive_url: "{{ archive_page.content | regex_findall('href=\"(enwiki-.*?.bz2)\"') | first }}"
       vars:
-        archive_page: "{{ lookup('ansible.builtin.file', '/home/kurt/Downloads/wiki/') }}"
+        archive_page: "{{ lookup('ansible.builtin.file', '/home/kurt/wiki/index.html') }}"
 
     - name: Download wikipedia archive
       get_url:
         url: "https://dumps.wikimedia.org/enwiki/latest/{{ archive_url }}"
-        dest: "/home/kurt/Downloads/wiki/{{ archive_url }}"
+        dest: "/home/kurt/wiki/{{ archive_url }}"
       when: archive_url is defined
 
     - name: Delete old wikipedia archives
       file:
-        path: "/home/kurt/Downloads/wiki"
+        path: "/home/kurt/wiki"
         state: absent
         glob: "enwiki-*"
         exclude:
-          - "/home/kurt/Downloads/wiki/{{ archive_url | default('') }}"
+          - "/home/kurt/wiki/{{ archive_url | default('') }}"
