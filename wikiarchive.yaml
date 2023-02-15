@@ -1,6 +1,6 @@
 ---
 - name: Update Wiki Archive
-  hosts: all
+  hosts: 192.168.0.162
   become: yes
   gather_facts: no
 
