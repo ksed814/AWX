@@ -1,5 +1,4 @@
 ---
----
 - name: Download and manage wikipedia archive
   hosts: 192.168.0.162
   gather_facts: no
