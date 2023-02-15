@@ -1,33 +1,47 @@
 ---
-- name: Download and manage wikipedia archive
+- name: Download and extract Wikipedia archive
   hosts: 192.168.0.162
-  gather_facts: no 
+
+  vars:
+    archive_dir: /home/kurt/wiki
 
   tasks:
-    - name: Download wikipedia archive page
+  # Download the index page
+    - name: Download index page
       get_url:
-        url: "https://dumps.wikimedia.org/enwiki/latest/"
-        dest: "/home/kurt/wiki/index.html"
-        group: kurt
-        owner: kurt
-        mode: '775'
+        url: "https://dumps.wikimedia.org/backup-index-bydb.html"
+        dest: "{{ archive_dir }}/index.html"
 
+    # Extract the link to the latest archive
     - name: Set archive URL
       set_fact:
-        archive_url: "{{ archive_page.content | regex_findall('href=\"(enwiki-.*?.bz2)\"') | first }}"
-      vars:
-        archive_page: "{{ lookup('ansible.builtin.file', '/home/kurt/wiki/index.html') }}"
+        archive_url: "{{ lookup('file', archive_dir + '/index.html') | regex_findall('href=\"(enwiki-.*?.bz2)\"') | first }}"
 
-    - name: Download wikipedia archive
+    # Download the archive
+    - name: Download archive
       get_url:
-        url: "https://dumps.wikimedia.org/enwiki/latest/{{ archive_url }}"
-        dest: "/home/kurt/wiki/{{ archive_url }}"
-      when: archive_url is defined
+        url: "https://dumps.wikimedia.org/{{ archive_url }}"
+        dest: "{{ archive_dir }}/{{ archive_url }}"
+        mode: "0644"
 
-    - name: Delete old wikipedia archives
+    # Extract the archive
+    - name: Extract archive
+      unarchive:
+        src: "{{ archive_dir }}/{{ archive_url }}"
+        dest: "{{ archive_dir }}"
+        remote_src: yes
+        extra_opts:
+          - "--no-same-owner"
+
+    # Delete old archives and keep only the latest one
+    - name: Delete old archives
       file:
-        path: "/home/kurt/wiki"
+        path: "{{ item }}"
         state: absent
-        glob: "enwiki-*"
-        exclude:
-          - "/home/kurt/wiki/{{ archive_url | default('') }}"
+      with_fileglob:
+        - "{{ archive_dir }}/enwiki-*.bz2"
+      when: item != "{{ archive_dir }}/{{ archive_url }}"
+
+    # Display the archive directory contents
+    - name: Show archive directory
+      command: ls -l "{{ archive_dir }}"
