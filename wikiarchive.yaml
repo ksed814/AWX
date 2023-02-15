@@ -3,6 +3,8 @@
   hosts: 192.168.0.162
   gather_facts: no
   become: yes
+  become_method: sudo
+  
 
   tasks:
     - name: Download wikipedia archive page
