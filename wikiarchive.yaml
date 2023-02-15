@@ -1,47 +1,50 @@
 ---
-- name: Download and extract Wikipedia archive
-  hosts: 192.168.0.162
-
-  vars:
-    archive_dir: /home/kurt/wiki
+- name: Update Wiki Archive
+  hosts: all
+  become: yes
+  gather_facts: no
 
   tasks:
-  # Download the index page
-    - name: Download index page
-      get_url:
-        url: "https://dumps.wikimedia.org/backup-index-bydb.html"
-        dest: "{{ archive_dir }}/index.html"
+    - name: Check if wiki archive exists
+      stat:
+        path: /home/kurt/wiki/enwiki-latest-pages-articles.xml.bz2
+      register: wiki_archive
 
-    # Extract the link to the latest archive
+    - name: Download wiki archive
+      when: wiki_archive.stat.exists == false
+      get_url:
+        url: https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2
+        dest: /home/kurt/wiki/enwiki-latest-pages-articles.xml.bz2
+        mode: 0644
+
+    - name: Create wiki archive directory
+      file:
+        path: /home/kurt/wiki/
+        state: directory
+        mode: 0755
+
+    - name: Extract wiki archive
+      command: bunzip2 -k /home/kurt/wiki/enwiki-latest-pages-articles.xml.bz2
+      args:
+        creates: /home/kurt/wiki/enwiki-latest-pages-articles.xml
+
+    - name: Generate wiki HTML
+      command: wikixml2html /home/kurt/wiki/enwiki-latest-pages-articles.xml /home/kurt/wiki/index.html
+      args:
+        creates: /home/kurt/wiki/index.html
+
     - name: Set archive URL
       set_fact:
-        archive_url: "{{ lookup('file', archive_dir + '/index.html') | regex_findall('href=\"(enwiki-.*?.bz2)\"') | first }}"
+        archive_url: "https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2"
 
-    # Download the archive
-    - name: Download archive
-      get_url:
-        url: "https://dumps.wikimedia.org/{{ archive_url }}"
-        dest: "{{ archive_dir }}/{{ archive_url }}"
-        mode: "0644"
+    - name: Delete old wiki archives
+      become: yes
+      shell: "rm -f /home/kurt/wiki/enwiki-*.bz2"
+      args:
+        warn: false
 
-    # Extract the archive
-    - name: Extract archive
-      unarchive:
-        src: "{{ archive_dir }}/{{ archive_url }}"
-        dest: "{{ archive_dir }}"
-        remote_src: yes
-        extra_opts:
-          - "--no-same-owner"
-
-    # Delete old archives and keep only the latest one
-    - name: Delete old archives
-      file:
-        path: "{{ item }}"
-        state: absent
-      with_fileglob:
-        - "{{ archive_dir }}/enwiki-*.bz2"
-      when: item != "{{ archive_dir }}/{{ archive_url }}"
-
-    # Display the archive directory contents
-    - name: Show archive directory
-      command: ls -l "{{ archive_dir }}"
+    - name: Keep only latest wiki archive
+      become: yes
+      shell: "ls -t /home/kurt/wiki/enwiki-*.xml | tail -n +2 | xargs rm -f"
+      args:
+        warn: false
