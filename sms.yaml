@@ -5,10 +5,10 @@
   tasks:
     - name: Send SMS
       uri:
-        url: "https://api.twilio.com/2010-04-01/Accounts/SKbe072623300641bd2695b95e56660ed3/Messages.json"
+        url: "https://api.twilio.com/2010-04-01/Accounts/ACd6504b9eeecfc449b2a4f36422bc2024/Messages.json"
         method: POST
         headers:
-          Authorization: "Basic Ev2KDjpD4tzmhf1V16suRs5VLkXQEI6a"
+          Authorization: "Basic a5464917002ce6025051ade7f3aef309"
         body_format: form-urlencoded
         body:
           From: "14124197529"  # Replace with your Twilio phone number
