@@ -1,0 +1,21 @@
+---
+- name: Send Text Message
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Send SMS
+      uri:
+        url: "https://api.twilio.com/2010-04-01/Accounts/SKbe072623300641bd2695b95e56660ed3/Messages.json"
+        method: POST
+        headers:
+          Authorization: "Basic Ev2KDjpD4tzmhf1V16suRs5VLkXQEI6a"
+        body_format: form-urlencoded
+        body:
+          From: "14124197529"  # Replace with your Twilio phone number
+          To: "17039730954"  # Replace with the target phone number
+          Body: "This is a test message for my automated bot."  # Replace with your desired message
+      register: response
+
+    - name: Check Response
+      debug:
+        var: response
